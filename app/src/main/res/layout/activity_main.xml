@@ -10,4 +10,32 @@
         android:text="get from http" android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <EditText
+        android:id="@+id/username"
+        android:hint="username"
+        android:layout_below="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/passwd"
+        android:hint="passwd"
+        android:layout_below="@+id/username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    
+    <Button
+        android:id="@+id/submit"
+        android:text="Get method"
+        android:layout_below="@+id/passwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/submit1"
+        android:text="Post method"
+        android:layout_below="@+id/submit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
 </RelativeLayout>
