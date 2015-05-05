@@ -1,5 +1,6 @@
 package com.example.hong.s02e10_http;
 
+import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.EditText;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -18,10 +20,15 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,6 +45,7 @@ public class MainActivity extends ActionBarActivity {
     private EditText pwdText;
     private Button submit;
     private Button submit1;
+    private Button submit2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +64,9 @@ public class MainActivity extends ActionBarActivity {
         ButtonListener1 buttonListener1 = new ButtonListener1();
         submit.setOnClickListener(buttonListener1);
         submit1.setOnClickListener(buttonListener1);
+
+        submit2 = (Button)findViewById(R.id.submit2);
+        submit2.setOnClickListener(buttonListener1);
     }
 
 
@@ -121,11 +132,17 @@ public class MainActivity extends ActionBarActivity {
             String pwd = pwdText.getText().toString();
 
             if(v.getId() == R.id.submit) {
+                Log.d("onClick", "submit");
                 GetThread gt = new GetThread(name, pwd);
                 gt.start();
             } else if(v.getId() == R.id.submit1) {
+                Log.d("onClick", "submit1");
                 PostThread pt = new PostThread(name, pwd);
                 pt.start();
+            } else if(v.getId() == R.id.submit2) {
+                Log.d("onClick", "submit2");
+                UploadThread ut = new UploadThread();
+                ut.start();
             }
 
         }
@@ -203,6 +220,48 @@ public class MainActivity extends ActionBarActivity {
                     e.printStackTrace();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // for S02E13
+    class UploadThread extends Thread {
+        @Override
+        public void run() {
+            HttpClient httpClient = new DefaultHttpClient();
+            //上传文件只能使用POST方法。上传文件的URL由服务器开发人员规定
+            HttpPost httpPost = new HttpPost("http://www.baidu.com");
+            String filePath = Environment.getDataDirectory().toString() + File.separator + "system/packages.xml";
+            Log.d("UploadThread", "file path: " + filePath);
+            File file = new File(filePath);
+            FileBody fileBody = new FileBody(file);
+            //生成一个ContentType对象，该对象用于表示数据的类型，
+            //Create方法第一个参数用于表示数据的类型，第二个参数用于指定数据所使用的字符集
+            ContentType contentType = ContentType.create("text/html", "GBK");
+            //生成一个代表字符串请求内容的对象
+            StringBody strBody = new StringBody("ZhangSan", contentType);
+
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.addPart("uploadfile", fileBody);
+            builder.addPart("testdata", strBody);
+
+            //通过builder创建一个请求对象
+            HttpEntity entity = builder.build();
+            httpPost.setEntity(entity);
+
+            try {
+                Log.e("Upload", "to execute http post");
+                HttpResponse response = httpClient.execute(httpPost);
+                if(response.getStatusLine().getStatusCode() == 200) {
+                    HttpEntity en = response.getEntity();
+                    //在读取服务器端的响应时，需要跟服务器开发人员确认字符编码
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(en.getContent(), "GBK"));
+                    String result = reader.readLine();
+                    Log.d("Upload", "result: " + result);
+                }
+            } catch (Exception e) {
+                Log.e("Upload", "no response");
                 e.printStackTrace();
             }
         }
