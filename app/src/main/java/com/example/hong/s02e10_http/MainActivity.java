@@ -15,6 +15,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 /**
  * Created by lenovo on 2017/11/28.
  */
@@ -35,7 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.send_request) {
-            sendRequestWithHttpURLConnection();
+//            sendRequestWithHttpURLConnection();
+            sendRequestWithOkHttp();
         }
     }
 
@@ -49,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 try {
                     URL url = new URL("https://www.baidu.com");
                     connection = (HttpURLConnection) url.openConnection();
-                    
+
 //                    connection.setRequestMethod("GET");
                     connection.setRequestMethod("POST");
                     DataOutputStream out = new DataOutputStream(connection.getOutputStream());
@@ -79,6 +86,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (connection != null) {
                         connection.disconnect();
                     }
+                }
+            }
+        }).start();
+    }
+
+    private void sendRequestWithOkHttp() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    OkHttpClient client = new OkHttpClient();
+                    RequestBody requestBody = new FormBody.Builder()
+                            .add("username", "admin")
+                            .add("password", "123456")
+                            .build();
+                    Request request = new Request.Builder().url("http://www.baidu.com")
+                            .post(requestBody).build();
+                    Response response = client.newCall(request).execute();
+                    String resposeData = response.body().string();
+                    showResponse(resposeData);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
