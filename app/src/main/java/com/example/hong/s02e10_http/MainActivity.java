@@ -2,9 +2,13 @@ package com.example.hong.s02e10_http;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.BufferedReader;
 import java.io.DataOutput;
@@ -12,6 +16,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -26,6 +31,7 @@ import okhttp3.Response;
  */
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private final String TAG = "MainActivity";
 
     TextView responseText;
 
@@ -91,6 +97,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }).start();
     }
 
+    private void parseXMLWithPull(String xmlData) {
+        try {
+            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+            XmlPullParser xmlPullParser = factory.newPullParser();
+            xmlPullParser.setInput(new StringReader(xmlData));
+            int eventType = xmlPullParser.getEventType();
+            String calories = "";
+            String name = "";
+            String price = "";
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                String nodeName = xmlPullParser.getName();
+                Log.d(TAG, " " + nodeName);
+                switch (eventType) {
+                    // 开始解析某个节点
+                    case XmlPullParser.START_TAG: {
+                        if ("calories".equals(nodeName)) {
+                            calories = xmlPullParser.nextText();
+                        } else if ("name".equals(nodeName)) {
+                            name = xmlPullParser.nextText();
+                        } else if ("price".equals(nodeName)) {
+                            price = xmlPullParser.nextText();
+                        }
+                        break;
+                    }
+                    //完成解析某个节点
+                    case XmlPullParser.END_TAG: {
+                        if ("food".equals(nodeName)) {
+                            Log.e(TAG, "name is " + name);
+                            Log.e(TAG, "price is " + price);
+                            Log.e(TAG, "calories is " + calories);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                eventType = xmlPullParser.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void sendRequestWithOkHttp() {
         new Thread(new Runnable() {
             @Override
@@ -101,11 +150,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .add("username", "admin")
                             .add("password", "123456")
                             .build();
-                    Request request = new Request.Builder().url("http://www.baidu.com")
-                            .post(requestBody).build();
+                    Request request = new Request.Builder().url("http://www.w3school.com.cn/example/xmle/simple.xml")
+                            .build();
                     Response response = client.newCall(request).execute();
                     String resposeData = response.body().string();
                     showResponse(resposeData);
+                    parseXMLWithPull(resposeData);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
