@@ -8,6 +8,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.hong.s02e10_http.business.ContentHandler;
+import com.example.hong.s02e10_http.business.JsonClass;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -200,6 +203,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void paseJSONWithGSON(String jsonData) {
+        Gson gson = new Gson();
+        JsonClass jsonClass = gson.fromJson(jsonData, JsonClass.class);
+        Log.d(TAG, "code is " + jsonClass.code);
+        Log.d(TAG, "msg is " + jsonClass.msg);
+    }
+
     private void sendRequestJsonWithOkHttp() {
         new Thread(new Runnable() {
             @Override
@@ -211,7 +221,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Response response = client.newCall(request).execute();
                     String resposeData = response.body().string();
                     showResponse(resposeData);
-                    parseJSONWithJSONObject(resposeData);
+//                    parseJSONWithJSONObject(resposeData);
+                    paseJSONWithGSON(resposeData);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
