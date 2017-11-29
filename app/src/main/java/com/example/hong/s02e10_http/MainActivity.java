@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import com.example.hong.s02e10_http.business.ContentHandler;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xmlpull.v1.XmlPullParser;
@@ -56,7 +58,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         if (v.getId() == R.id.send_request) {
 //            sendRequestWithHttpURLConnection();
-            sendRequestWithOkHttp();
+//            sendRequestWithOkHttp();
+            sendRequestJsonWithOkHttp();
         }
     }
 
@@ -178,6 +181,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     showResponse(resposeData);
 //                    parseXMLWithPull(resposeData);
                     parseXMLWithSAX(resposeData);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    private void parseJSONWithJSONObject(String jsonData) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonData);
+            String code = jsonObject.getString("code");
+            String msg = jsonObject.getString("msg");
+            Log.d(TAG, "code is " + code);
+            Log.d(TAG, "msg is " + msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendRequestJsonWithOkHttp() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    OkHttpClient client = new OkHttpClient();
+                    Request request = new Request.Builder().url("http://saas-rel.haimawan.com:8081/s/rest/api")
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    String resposeData = response.body().string();
+                    showResponse(resposeData);
+                    parseJSONWithJSONObject(resposeData);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
